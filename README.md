@@ -1,8 +1,12 @@
-# QuantumRoute Doctor
+<p align="center">
+  <img src="quantumroute_doctor_logo.jpg" alt="QuantumRoute Doctor Logo" width="180">
+</p>
 
-QuantumRoute Doctor is a diagnostic and intelligent routing support system for quantum networks.
+<h1 align="center">QuantumRoute Doctor</h1>
 
-It checks quantum network health, detects faulty links, analyzes fidelity and noise, ranks available routes, and recommends safer routing paths.
+<p align="center">
+  Diagnostic and intelligent routing support for quantum networks.
+</p>
 
 ## Features
 
