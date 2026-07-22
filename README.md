@@ -7,7 +7,13 @@
 <p align="center">
   Diagnostic and intelligent routing support for quantum networks.
 </p>
+## Application Preview
 
+<p align="center">
+  <img src="screenshots/quantumroute_doctor_dashboard.png"
+       alt="QuantumRoute Doctor Dashboard"
+       width="900">
+</p>
 ## Features
 
 - Quantum network link monitoring
