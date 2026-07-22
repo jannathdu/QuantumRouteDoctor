@@ -20,6 +20,10 @@ def create_quantum_network(
     ad_noise,
     dc_fidelity,
     dc_noise,
+    ab_age=2.0,
+    bc_age=5.0,
+    ad_age=1.0,
+    dc_age=3.0,
 ):
     network = nx.Graph()
 
@@ -30,6 +34,7 @@ def create_quantum_network(
         "B",
         fidelity=ab_fidelity,
         noise=ab_noise,
+        age=ab_age,
     )
 
     network.add_edge(
@@ -37,6 +42,7 @@ def create_quantum_network(
         "C",
         fidelity=bc_fidelity,
         noise=bc_noise,
+        age=bc_age,
     )
 
     network.add_edge(
@@ -44,6 +50,7 @@ def create_quantum_network(
         "D",
         fidelity=ad_fidelity,
         noise=ad_noise,
+        age=ad_age,
     )
 
     network.add_edge(
@@ -51,10 +58,10 @@ def create_quantum_network(
         "C",
         fidelity=dc_fidelity,
         noise=dc_noise,
+        age=dc_age,
     )
 
     return network
-
 
 # =========================================================
 # 2. LINK DIAGNOSIS
@@ -157,6 +164,7 @@ def calculate_route_metrics(
 ):
     route_fidelity = 1.0
     total_noise = 0.0
+    total_age = 0.0
 
     hop_count = len(route) - 1
 
@@ -168,15 +176,24 @@ def calculate_route_metrics(
 
         route_fidelity *= link_data["fidelity"]
         total_noise += link_data["noise"]
+        total_age += link_data.get("age", 0.0)
 
     if hop_count > 0:
         average_noise = total_noise / hop_count
+        average_age = total_age / hop_count
     else:
         average_noise = 0.0
+        average_age = 0.0
+
+    age_freshness = max(
+        0.0,
+        1.0 - (average_age / 20.0),
+    )
 
     route_health = (
-        0.70 * route_fidelity
-        + 0.30 * (1.0 - average_noise)
+        0.60 * route_fidelity
+        + 0.25 * (1.0 - average_noise)
+        + 0.15 * age_freshness
     )
 
     return route_fidelity, total_noise, route_health
@@ -248,6 +265,21 @@ def compare_all_routes(
                 )
             )
 
+            hop_count = len(route) - 1
+            total_age = 0.0
+
+            for index in range(hop_count):
+                current_node = route[index]
+                next_node = route[index + 1]
+
+                link_data = network[current_node][next_node]
+                total_age += link_data.get("age", 0.0)
+
+            if hop_count > 0:
+                average_age = total_age / hop_count
+            else:
+                average_age = 0.0
+
             if health_score >= 0.75:
                 route_quality = "EXCELLENT"
 
@@ -260,9 +292,10 @@ def compare_all_routes(
             route_results.append(
                 {
                     "Route": " → ".join(route),
-                    "Hop Count": len(route) - 1,
+                    "Hop Count": hop_count,
                     "Fidelity": route_fidelity,
                     "Noise": route_noise,
+                    "Average Age (s)": average_age,
                     "Health Score": health_score,
                     "Route Quality": route_quality,
                 }
@@ -502,7 +535,9 @@ def generate_professional_text_report(
         report_lines.append(
             f"Noise: {route['Noise']:.3f}"
         )
-
+        report_lines.append(
+            f"Average Age: {route['Average Age (s)']:.2f} seconds"
+        )
         report_lines.append(
             f"Safety Status: {route['Safety Status']}"
         )
@@ -652,6 +687,7 @@ def generate_professional_html_report(
             <td>{route["Health Score"]:.3f}</td>
             <td>{route["Fidelity"]:.3f}</td>
             <td>{route["Noise"]:.3f}</td>
+            <td>{route["Average Age (s)"]:.2f} s</td>
             <td style="{safety_style}">{safety_status}</td>
             <td style="{quality_style}">{route_quality}</td>
         </tr>
@@ -827,6 +863,7 @@ def generate_professional_html_report(
                     <th>Health Score</th>
                     <th>Fidelity</th>
                     <th>Noise</th>
+                    <th>Average Age</th>
                     <th>Safety</th>
                     <th>Quality</th>
                 </tr>
@@ -1314,6 +1351,15 @@ ab_noise = st.sidebar.slider(
     key="ab_noise_slider",
 )
 
+ab_age = st.sidebar.slider(
+    "A-B Entanglement Age (seconds)",
+    min_value=0.0,
+    max_value=20.0,
+    value=2.0,
+    step=0.5,
+    key="ab_age_slider",
+)
+
 st.sidebar.markdown("### Link B → C")
 
 bc_fidelity = st.sidebar.slider(
@@ -1332,6 +1378,15 @@ bc_noise = st.sidebar.slider(
     value=0.30,
     step=0.01,
     key="bc_noise_slider",
+)
+
+bc_age = st.sidebar.slider(
+    "B-C Entanglement Age (seconds)",
+    min_value=0.0,
+    max_value=20.0,
+    value=5.0,
+    step=0.5,
+    key="bc_age_slider",
 )
 
 st.sidebar.markdown("### Link A → D")
@@ -1354,6 +1409,15 @@ ad_noise = st.sidebar.slider(
     key="ad_noise_slider",
 )
 
+ad_age = st.sidebar.slider(
+    "A-D Entanglement Age (seconds)",
+    min_value=0.0,
+    max_value=20.0,
+    value=1.0,
+    step=0.5,
+    key="ad_age_slider",
+)
+
 st.sidebar.markdown("### Link D → C")
 
 dc_fidelity = st.sidebar.slider(
@@ -1372,6 +1436,15 @@ dc_noise = st.sidebar.slider(
     value=0.15,
     step=0.01,
     key="dc_noise_slider",
+)
+
+dc_age = st.sidebar.slider(
+    "D-C Entanglement Age (seconds)",
+    min_value=0.0,
+    max_value=20.0,
+    value=3.0,
+    step=0.5,
+    key="dc_age_slider",
 )
 
 st.sidebar.divider()
@@ -1412,7 +1485,6 @@ if source_node == target_node:
     st.error(
         "Source Node and Target Node cannot be the same."
     )
-
     st.stop()
 
 header_column_1, header_column_2 = st.columns(
@@ -1422,7 +1494,7 @@ header_column_1, header_column_2 = st.columns(
 with header_column_1:
     st.image(
         "quantumroute_doctor_logo.jpg",
-        width=130
+        width=130,
     )
 
 with header_column_2:
@@ -1444,6 +1516,10 @@ quantum_network = create_quantum_network(
     ad_noise,
     dc_fidelity,
     dc_noise,
+    ab_age,
+    bc_age,
+    ad_age,
+    dc_age,
 )
 
 faulty_edges = scan_faulty_links(
@@ -1452,35 +1528,12 @@ faulty_edges = scan_faulty_links(
     noise_threshold,
 )
 
-if source_node == target_node:
-    safe_route = None
-else:
-    safe_route = find_safe_route(
-        quantum_network,
-        source_node,
-        target_node,
-        faulty_edges,
-    )
-
-
-# =========================================================
-# 7. NETWORK SUMMARY
-# =========================================================
-st.subheader("Network Summary")
-
-summary_column_1, summary_column_2 = st.columns(2)
-
-summary_column_1.metric(
-    "Total Nodes",
-    quantum_network.number_of_nodes(),
+safe_route = find_safe_route(
+    quantum_network,
+    source_node,
+    target_node,
+    faulty_edges,
 )
-
-summary_column_2.metric(
-    "Total Links",
-    quantum_network.number_of_edges(),
-)
-
-
 # =========================================================
 # 8. NETWORK DIAGNOSIS
 # =========================================================
@@ -1768,32 +1821,45 @@ for reason in best_route_reasons:
 
 st.subheader("📊 Best Route Summary")
 
-summary_column_1, summary_column_2, summary_column_3, summary_column_4 = st.columns(4)
+(
+    summary_column_1,
+    summary_column_2,
+    summary_column_3,
+    summary_column_4,
+    summary_column_5,
+) = st.columns(5)
 
 with summary_column_1:
     st.metric(
         "Selected Route",
-        best_route["Route"]
+        best_route["Route"],
     )
 
 with summary_column_2:
     st.metric(
         "Health Score",
-        f"{best_route['Health Score']:.3f}"
+        f"{best_route['Health Score']:.3f}",
     )
 
 with summary_column_3:
     st.metric(
         "Fidelity",
-        f"{best_route['Fidelity']:.3f}"
+        f"{best_route['Fidelity']:.3f}",
     )
 
 with summary_column_4:
     st.metric(
         "Noise",
-        f"{best_route['Noise']:.3f}"
+        f"{best_route['Noise']:.3f}",
     )
-    st.subheader("🚦 Routing Decision")
+
+with summary_column_5:
+    st.metric(
+        "Average Age",
+        f"{best_route['Average Age (s)']:.2f} s",
+    )
+
+st.subheader("🚦 Routing Decision")
 
 if best_route["Safety Status"] == "SAFE":
 
@@ -1858,7 +1924,7 @@ for index, route in enumerate(
     start=1
 ):
 
-    st.write(
+   st.write(
     f"""
 ### Rank {index}
 
@@ -1867,6 +1933,9 @@ Route:
 
 Health Score:
 {route['Health Score']:.3f}
+
+Average Age:
+{route['Average Age (s)']:.2f} seconds
 
 Safety:
 {route['Safety Status']}
