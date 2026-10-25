@@ -18,7 +18,7 @@ export default function RoutingResults({ route }: Props) {
       <p>Destination: {route.destination}</p>
       <p>Minimum Fidelity: {route.minimum_fidelity.toFixed(3)}</p>
       <p>Feasible: {route.feasible ? "Yes" : "No"}</p>
-      <p>Selected Route: {route.selected_route?.join(" ¡ú ") ?? "None"}</p>
+      <p>Selected Route: {route.selected_route?.join(" -> ") ?? "None"}</p>
             {"predicted_fidelity" in route ? (
         <>
           <p>Predicted Fidelity: {route.predicted_fidelity?.toFixed(3) ?? "N/A"}</p>

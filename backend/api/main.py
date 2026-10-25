@@ -66,3 +66,36 @@ def get_temporal_route(
         "hop_count": result["hop_count"] if result else None,
         "data_source": "synthetic_demo",
     }
+
+@app.get("/api/routes/compare")
+def compare_routes(
+    source: str = "A",
+    destination: str = "C",
+    minimum_fidelity: float = Query(0.8, ge=0.25, le=1.0),
+    maximum_aoi: float = Query(10.0, ge=0.0, le=1000000.0),
+    current_time: float = Query(10.0, ge=0.0, le=1000000.0),
+):
+    baseline = get_routes(
+        source=source,
+        destination=destination,
+        minimum_fidelity=minimum_fidelity,
+    )
+
+    temporal = get_temporal_route(
+        source=source,
+        destination=destination,
+        current_time=current_time,
+        minimum_fidelity=minimum_fidelity,
+        maximum_aoi=maximum_aoi,
+    )
+
+    return {
+        "source": source,
+        "destination": destination,
+        "minimum_fidelity": minimum_fidelity,
+        "maximum_aoi": maximum_aoi,
+        "current_time": current_time,
+        "baseline": baseline,
+        "temporal": temporal,
+        "data_source": "synthetic_demo",
+    }

@@ -2,10 +2,11 @@ import { useState } from "react";
 
 type Props = {
   nodeIds: string[];
+  calculating?: boolean;
   onCalculate: (source: string, destination: string, minimumFidelity: number, algorithm: "baseline" | "temporal", maximumAoi: number) => void;
 };
 
-export default function RoutingControls({ nodeIds, onCalculate }: Props) {
+export default function RoutingControls({ nodeIds, onCalculate, calculating = false }: Props) {
   const [source, setSource] = useState("A");
   const [destination, setDestination] = useState("C");
   const [minimumFidelity, setMinimumFidelity] = useState(0.8);
@@ -42,7 +43,7 @@ export default function RoutingControls({ nodeIds, onCalculate }: Props) {
         {nodeIds.map((id) => <option key={id} value={id}>{id}</option>)}
       </select>
 
-            {algorithm === "temporal" && (
+            {(
         <div style={{ marginTop: 12 }}>
           <label htmlFor="maximum-aoi">
             Maximum AoI: {maximumAoi.toFixed(1)}
@@ -70,10 +71,10 @@ export default function RoutingControls({ nodeIds, onCalculate }: Props) {
 
       <p>
         <button
-          disabled={!canCalculate}
+          disabled={!canCalculate || calculating}
           onClick={() => onCalculate(source, destination, minimumFidelity, algorithm, maximumAoi)}
         >
-          Calculate Route
+          {calculating ? "Calculating..." : "Calculate Route"}
         </button>
       </p>
 
