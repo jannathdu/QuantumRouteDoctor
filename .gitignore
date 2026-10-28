@@ -1,26 +1,31 @@
-# Virtual environment
+﻿# Virtual environments
 venv/
 .venv/
 
 # Python cache
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 
 # Secrets and environment variables
 .env
 .streamlit/secrets.toml
 
-# Backup files and folders
+# Backup files
 project_backup/
 app_backup.py
 app_step*_backup.py
 app_final_backup.py
+*.backup
+*.before_*.txt
+*.before_*.backup
 
-# Generated reports
+# Generated reports: ignore by default
 *.csv
 *.html
 *.pdf
+
+# Keep research CSV results under version control
+!results/research_reports/*.csv
 
 # VS Code and Windows files
 .vscode/
