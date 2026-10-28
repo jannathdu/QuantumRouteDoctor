@@ -1,0 +1,11 @@
+seed,node_count,link_count,source,destination,algorithm,route_selected,selected_route,hop_count,memory_adjusted_fidelity,maximum_link_aoi,feasible,minimum_fidelity,maximum_aoi,current_time,data_source
+42,10,15,N0,N9,baseline,True,N0 -> N7 -> N3 -> N9,3,0.8045313450556313,2.8938796360210715,True,0.5,5.0,10.0,synthetic_random_connected
+42,10,15,N0,N9,temporal,True,N0 -> N7 -> N3 -> N9,3,0.8045313450556313,2.8938796360210715,True,0.5,5.0,10.0,synthetic_random_connected
+43,10,15,N0,N9,baseline,True,N0 -> N3 -> N9,2,0.7552677854435379,7.345907167870696,False,0.5,5.0,10.0,synthetic_random_connected
+43,10,15,N0,N9,temporal,False,,,,,False,0.5,5.0,10.0,synthetic_random_connected
+44,10,15,N0,N9,baseline,True,N0 -> N9,1,0.9847400461459261,2.7796955523840525,True,0.5,5.0,10.0,synthetic_random_connected
+44,10,15,N0,N9,temporal,True,N0 -> N9,1,0.9847400461459261,2.7796955523840525,True,0.5,5.0,10.0,synthetic_random_connected
+45,10,15,N0,N9,baseline,True,N0 -> N9,1,0.8891185660533713,5.543758652088946,False,0.5,5.0,10.0,synthetic_random_connected
+45,10,15,N0,N9,temporal,True,N0 -> N1 -> N9,2,0.8058009235456718,4.240259848071954,True,0.5,5.0,10.0,synthetic_random_connected
+46,10,15,N0,N9,baseline,True,N0 -> N9,1,0.7993299278712139,3.6585112310799204,True,0.5,5.0,10.0,synthetic_random_connected
+46,10,15,N0,N9,temporal,True,N0 -> N1 -> N6 -> N9,3,0.8086911763081508,2.722800131862443,True,0.5,5.0,10.0,synthetic_random_connected
