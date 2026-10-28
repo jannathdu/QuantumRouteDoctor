@@ -56,10 +56,10 @@ def generate_research_scenario(
 
     # Add additional randomly selected undirected links.
     candidates = [
-        (nodes[i], nodes[j])
+        tuple(sorted((nodes[i], nodes[j])))
         for i in range(node_count)
         for j in range(i + 1, node_count)
-        if (nodes[i], nodes[j]) not in edges
+        if tuple(sorted((nodes[i], nodes[j]))) not in edges
     ]
 
     rng.shuffle(candidates)
@@ -94,3 +94,4 @@ def generate_research_scenario(
     graph.graph["current_time"] = float(current_time)
 
     return graph
+
