@@ -183,3 +183,52 @@ def get_aoi_sweep(
         "points": points,
         "data_source": "synthetic_demo",
     }
+
+from pydantic import BaseModel, Field
+from backend.core.configurable_network import create_configurable_network
+
+
+class ConfigurableLink(BaseModel):
+    source: str
+    target: str
+    fidelity: float
+    noise: float
+    measurement_time: float | None = None
+    storage_time: float | None = None
+    decoherence_rate: float | None = None
+
+
+class ConfigurableNetworkRequest(BaseModel):
+    nodes: list[str] = Field(min_length=2)
+    links: list[ConfigurableLink]
+
+
+@app.post("/api/network/configurable")
+def create_configurable_network_api(request: ConfigurableNetworkRequest):
+    links = []
+
+    for link in request.links:
+        data = link.model_dump(exclude_none=True)
+        links.append(data)
+
+    try:
+        graph = create_configurable_network(request.nodes, links)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+
+    nodes = [{"id": node} for node in graph.nodes()]
+    edges = [
+        {"source": source, "target": target, **data}
+        for source, target, data in graph.edges(data=True)
+    ]
+
+    return {
+        "nodes": nodes,
+        "links": edges,
+        "node_count": graph.number_of_nodes(),
+        "link_count": graph.number_of_edges(),
+        "data_source": "user_configured",
+    }
