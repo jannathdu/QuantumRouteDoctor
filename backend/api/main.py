@@ -135,3 +135,51 @@ def get_fidelity_decay(
         "points": points,
         "data_source": "analytical_model",
     }
+
+@app.get("/api/research/aoi-sweep")
+def get_aoi_sweep(
+    source: str = "A",
+    destination: str = "C",
+    minimum_fidelity: float = Query(0.8, ge=0.25, le=1.0),
+    current_time: float = Query(10.0, ge=0.0, le=1000000.0),
+    maximum_aoi: int = Query(10, ge=0, le=100),
+):
+    graph = create_temporal_demo_network(current_time)
+
+    if source not in graph or destination not in graph or source == destination:
+        raise HTTPException(
+            status_code=422,
+            detail="Invalid source or destination",
+        )
+
+    points = []
+
+    for threshold in range(maximum_aoi + 1):
+        result = find_temporal_route(
+            graph,
+            source,
+            destination,
+            current_time=current_time,
+            minimum_fidelity=minimum_fidelity,
+            maximum_aoi=float(threshold),
+        )
+
+        points.append({
+            "maximum_aoi": threshold,
+            "feasible": result is not None,
+            "selected_route": result["route"] if result else None,
+            "predicted_fidelity": (
+                result["predicted_fidelity"] if result else None
+            ),
+            "hop_count": result["hop_count"] if result else None,
+        })
+
+    return {
+        "source": source,
+        "destination": destination,
+        "minimum_fidelity": minimum_fidelity,
+        "current_time": current_time,
+        "maximum_aoi": maximum_aoi,
+        "points": points,
+        "data_source": "synthetic_demo",
+    }
