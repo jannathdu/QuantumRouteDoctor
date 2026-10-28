@@ -99,3 +99,39 @@ def compare_routes(
         "temporal": temporal,
         "data_source": "synthetic_demo",
     }
+
+from backend.models.temporal_fidelity import predict_memory_fidelity
+
+
+@app.get("/api/research/fidelity-decay")
+def get_fidelity_decay(
+    initial_fidelity: float = Query(0.95, ge=0.25, le=1.0),
+    decoherence_rate: float = Query(0.03, ge=0.0, le=10.0),
+    maximum_time: float = Query(20.0, ge=0.0, le=1000.0),
+    samples: int = Query(21, ge=2, le=501),
+):
+    points = []
+
+    for index in range(samples):
+        storage_time = maximum_time * index / (samples - 1)
+
+        fidelity = predict_memory_fidelity(
+            initial_fidelity,
+            storage_time,
+            decoherence_rate,
+        )
+
+        points.append({
+            "storage_time": storage_time,
+            "predicted_fidelity": fidelity,
+        })
+
+    return {
+        "model": "simplified_depolarizing_memory",
+        "initial_fidelity": initial_fidelity,
+        "decoherence_rate": decoherence_rate,
+        "maximum_time": maximum_time,
+        "samples": samples,
+        "points": points,
+        "data_source": "analytical_model",
+    }
