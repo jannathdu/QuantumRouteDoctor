@@ -31,3 +31,6 @@ app_final_backup.py
 .vscode/
 Thumbs.db
 desktop.ini
+
+# Local research verification archives
+local_archive/
