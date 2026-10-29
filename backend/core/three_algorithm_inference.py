@@ -57,7 +57,7 @@ def holm_adjust(p_values):
 
 
 def analyze_three_algorithm_inference(summary, alpha=0.05):
-    """Test all pairwise algorithm comparisons with global Holm correction."""
+    """Test all pairwise comparisons with global Holm correction."""
     if (
         isinstance(alpha, bool)
         or not isinstance(alpha, (int, float))
@@ -66,19 +66,32 @@ def analyze_three_algorithm_inference(summary, alpha=0.05):
     ):
         raise ValueError("alpha must be between 0 and 1")
 
-    if not isinstance(summary, dict) or not isinstance(
-        summary.get("results"), list
-    ):
+    if not isinstance(summary, dict):
         raise ValueError("Invalid three-algorithm summary")
 
+    results = summary.get("results")
+    if not isinstance(results, list) or not results:
+        raise ValueError("Summary must contain non-empty results")
+
     comparisons = []
+    expected_pairs = {
+        "baseline_vs_memory_aware",
+        "baseline_vs_temporal",
+        "memory_aware_vs_temporal",
+    }
 
-    for result in summary["results"]:
-        pairs = result.get("paired_comparisons", {})
+    for result in results:
+        if not isinstance(result, dict):
+            raise ValueError("Each result must be a dictionary")
 
-        for pair_name, counts in pairs.items():
-            if "_vs_" not in pair_name:
-                raise ValueError(f"Invalid comparison name: {pair_name}")
+        pairs = result.get("paired_comparisons")
+        if not isinstance(pairs, dict) or set(pairs) != expected_pairs:
+            raise ValueError("Missing or unexpected pairwise comparisons")
+
+        for pair_name in sorted(expected_pairs):
+            counts = pairs[pair_name]
+            if not isinstance(counts, dict):
+                raise ValueError(f"Invalid counts for {pair_name}")
 
             first, second = pair_name.split("_vs_", 1)
             first_only = counts.get(f"{first}_only")
@@ -96,8 +109,9 @@ def analyze_three_algorithm_inference(summary, alpha=0.05):
                 "p_value": p_value,
             })
 
-    if not comparisons:
-        raise ValueError("No pairwise comparisons found")
+    expected_count = len(results) * 3
+    if len(comparisons) != expected_count:
+        raise ValueError("Unexpected pairwise comparison count")
 
     adjusted = holm_adjust(
         [item["p_value"] for item in comparisons]
@@ -112,7 +126,7 @@ def analyze_three_algorithm_inference(summary, alpha=0.05):
         "correction": "global_holm_bonferroni",
         "alpha": alpha,
         "family_size": len(comparisons),
-        "parameter_combinations": len(summary["results"]),
+        "parameter_combinations": len(results),
         "comparisons": comparisons,
         "data_source": "synthetic_paired_experiments",
     }

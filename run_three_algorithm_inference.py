@@ -5,7 +5,10 @@ from backend.core.three_algorithm_inference import (
     analyze_three_algorithm_inference,
 )
 
-base = Path("results/research_reports/three_algorithm_aoi_fidelity_sensitivity")
+base = Path(
+    "results/research_reports/"
+    "three_algorithm_aoi_fidelity_sensitivity"
+)
 summary_path = base / "three_algorithm_summary.json"
 output_path = base / "three_algorithm_statistical_inference.json"
 
@@ -24,9 +27,22 @@ if inference["family_size"] != 48:
         f"Expected 48 pairwise tests, got {inference['family_size']}"
     )
 
+if len(inference["comparisons"]) != 48:
+    raise ValueError("Expected exactly 48 comparison records")
+
 output_path.write_text(
-    json.dumps(inference, indent=2, ensure_ascii=False, allow_nan=False),
+    json.dumps(
+        inference,
+        indent=2,
+        ensure_ascii=False,
+        allow_nan=False,
+    ),
     encoding="utf-8",
+)
+
+significant = sum(
+    item["significant_after_holm"]
+    for item in inference["comparisons"]
 )
 
 print("=== INFERENCE REPORT GENERATED ===")
@@ -34,10 +50,7 @@ print("Parameter combinations:", inference["parameter_combinations"])
 print("Pairwise tests:", inference["family_size"])
 print("Correction:", inference["correction"])
 print("Alpha:", inference["alpha"])
-print("Significant after Holm:", sum(
-    item["significant_after_holm"]
-    for item in inference["comparisons"]
-))
+print("Significant after Holm:", significant)
 print("Report:", output_path)
 
 print("\n=== PAIRWISE RESULTS ===")
@@ -45,7 +58,7 @@ for item in inference["comparisons"]:
     print(
         f"AoI={item['maximum_aoi']:.1f}, "
         f"Fidelity={item['minimum_fidelity']:.1f}, "
-        f"{item['comparison']}: "
+        f"{item['comparison']}, "
         f"p={item['p_value']:.8g}, "
         f"Holm p={item['holm_adjusted_p_value']:.8g}, "
         f"significant={item['significant_after_holm']}"
